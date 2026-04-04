@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% block title %}{{ poll.question[:50] }} – PulseVote{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .poll-hero {
+    margin-bottom: 2rem;
+  }
+  .poll-hero .eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  .poll-hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.4rem, 3.5vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+  .poll-stats {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .vote-section, .results-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  /* Voting options */
+  .vote-options { display: flex; flex-direction: column; gap: 0.6rem; }
+
+  .vote-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .vote-radio { display: none; }
+
+  .vote-label {
+    flex: 1;
+    padding: 0.85rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.18s;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .vote-label::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    transition: all 0.18s;
+  }
+
+  .vote-radio:checked + .vote-label {
+    border-color: var(--accent);
+    background: rgba(124,58,255,0.1);
+    color: #c4b5fd;
+  }
+  .vote-radio:checked + .vote-label::before {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 8px rgba(124,58,255,0.5);
+  }
+  .vote-label:hover {
+    border-color: rgba(124,58,255,0.4);
+    background: rgba(124,58,255,0.06);
+  }
+
+  .vote-btn-row {
+    margin-top: 1rem;
+  }
+
+  /* Results bars */
+  .result-item { margin-bottom: 1rem; }
+
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+    font-size: 0.85rem;
+  }
+
+  .result-text { color: var(--text); flex: 1; padding-right: 0.5rem; }
+
+  .result-count {
+    color: var(--muted);
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .bar-track {
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 4px;
+    box-shadow: 0 0 8px rgba(124,58,255,0.4);
+  }
+
+  .bar-fill.leading {
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+    box-shadow: 0 0 10px rgba(58,255,184,0.35);
+  }
+
+  .result-percent {
+    font-size: 0.72rem;
+    color: var(--accent3);
+    text-align: right;
+    margin-top: 0.2rem;
+  }
+
+  .live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    color: var(--accent3);
+    letter-spacing: 0.5px;
+  }
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent3);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  .divider { height: 1px; background: var(--border); margin: 1.75rem 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="poll-hero animate">
+  <div class="eyebrow">// poll #{{ poll.id }}</div>
+  <h1>{{ poll.question }}</h1>
+  <div class="poll-stats">
+    <span class="tag tag-purple">{{ poll.options|length }} options</span>
+    <span class="tag tag-green" id="total-badge">{{ total_votes }} vote{{ 's' if total_votes != 1 }}</span>
+    <span class="tag" style="background:var(--surface2); border:1px solid var(--border); color:var(--muted);">
+      {{ poll.created_at.strftime('%d %b %Y, %H:%M') }}
+    </span>
+  </div>
+</div>
+
+<div class="card animate animate-delay-1">
+  <!-- VOTE FORM -->
+  <div class="vote-section">
+    <div class="section-label">Cast your vote</div>
+    <form method="POST" action="/vote/{{ poll.id }}">
+      <div class="vote-options">
+        {% for option in poll.options %}
+        <div class="vote-option">
+          <input class="vote-radio" type="radio" name="option_id" id="opt{{ option.id }}" value="{{ option.id }}" required/>
+          <label class="vote-label" for="opt{{ option.id }}">{{ option.text }}</label>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="vote-btn-row">
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:0.75rem;">
+          Submit Vote →
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- LIVE RESULTS -->
+  <div class="results-section">
+    <div class="section-label" style="display:flex; align-items:center; justify-content:space-between;">
+      <span>Live Results</span>
+      <span class="live-indicator"><span class="live-dot"></span> AUTO-REFRESH 5s</span>
+    </div>
+
+    <div id="results-container">
+      {% set max_votes = poll.options | map(attribute='votes') | max %}
+      {% for option in poll.options %}
+      {% set pct = ((option.votes / total_votes * 100) | round(1)) if total_votes > 0 else 0 %}
+      <div class="result-item">
+        <div class="result-header">
+          <span class="result-text">
+            {% if option.votes == max_votes and total_votes > 0 %}🏆 {% endif %}
+            {{ option.text }}
+          </span>
+          <span class="result-count">{{ option.votes }} vote{{ 's' if option.votes != 1 }}</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill {% if option.votes == max_votes and total_votes > 0 %}leading{% endif %}"
+               style="width: {{ pct }}%"></div>
+        </div>
+        <div class="result-percent">{{ pct }}%</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Auto-refresh results via API -->
+<script>
+  const pollId = {{ poll.id }};
+  async function refreshResults() {
+    try {
+      const res = await fetch(`/api/poll/${pollId}/results`);
+      const data = await res.json();
+      const container = document.getElementById('results-container');
+      const maxVotes = Math.max(...data.options.map(o => o.votes));
+
+      let html = '';
+      data.options.forEach(opt => {
+        const isLeading = opt.votes === maxVotes && data.total_votes > 0;
+        html += `
+          <div class="result-item">
+            <div class="result-header">
+              <span class="result-text">${isLeading ? '🏆 ' : ''}${opt.text}</span>
+              <span class="result-count">${opt.votes} vote${opt.votes !== 1 ? 's' : ''}</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill ${isLeading ? 'leading' : ''}" style="width: ${opt.percent}%"></div>
+            </div>
+            <div class="result-percent">${opt.percent}%</div>
+          </div>`;
+      });
+      container.innerHTML = html;
+
+      const badge = document.getElementById('total-badge');
+      badge.textContent = `${data.total_votes} vote${data.total_votes !== 1 ? 's' : ''}`;
+    } catch (e) { /* silent */ }
+  }
+  setInterval(refreshResults, 5000);
+</script>
+{% endblock %}

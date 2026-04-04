@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}PulseVote – Live Polls{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .hero {
+    text-align: center;
+    padding: 3rem 0 2.5rem;
+  }
+  .hero-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent3);
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, var(--text) 40%, var(--muted));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    max-width: 420px;
+    margin: 0 auto 2rem;
+    line-height: 1.7;
+  }
+  .poll-grid {
+    display: grid;
+    gap: 1rem;
+  }
+  .poll-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    text-decoration: none;
+    color: inherit;
+  }
+  .poll-card-left { flex: 1; min-width: 200px; }
+  .poll-question {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .poll-meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .poll-meta span {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .poll-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--muted);
+  }
+  .empty-state .big-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  .empty-state h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p { font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .section-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .count-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.65rem;
+    color: var(--muted);
+  }
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2rem 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero animate">
+  <p class="hero-eyebrow">// real-time polling</p>
+  <h1>Create. Vote.<br/>See Results Instantly.</h1>
+  <p>Build live polls in seconds. Share with anyone. Watch votes roll in.</p>
+  <a href="/create" class="btn btn-primary" style="font-size:0.95rem; padding: 0.75rem 2rem;">
+    ✦ Create a Poll
+  </a>
+</div>
+
+<div class="divider"></div>
+
+{% if polls %}
+<div class="section-header animate animate-delay-1">
+  <h2>Active Polls</h2>
+  <span class="count-badge">{{ polls|length }} poll{{ 's' if polls|length != 1 }}</span>
+</div>
+
+<div class="poll-grid">
+  {% for poll in polls %}
+  {% set total = poll.options | sum(attribute='votes') %}
+  <div class="card animate animate-delay-{{ loop.index % 3 + 1 }}">
+    <div class="poll-card">
+      <div class="poll-card-left">
+        <div class="poll-question">{{ poll.question }}</div>
+        <div class="poll-meta">
+          <span class="tag tag-purple">{{ poll.options|length }} options</span>
+          <span class="tag tag-green">{{ total }} vote{{ 's' if total != 1 }}</span>
+          <span>· {{ poll.created_at.strftime('%d %b %Y') }}</span>
+        </div>
+      </div>
+      <div class="poll-actions">
+        <a href="/poll/{{ poll.id }}" class="btn btn-ghost">View →</a>
+        <form method="POST" action="/delete/{{ poll.id }}" onsubmit="return confirm('Delete this poll?');" style="display:inline;">
+          <button type="submit" class="btn btn-danger">✕</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="empty-state card animate animate-delay-1">
+  <span class="big-icon">📊</span>
+  <h2>No polls yet</h2>
+  <p>Be the first to create a poll and start collecting votes!</p>
+  <a href="/create" class="btn btn-primary">Create your first poll</a>
+</div>
+{% endif %}
+{% endblock %}

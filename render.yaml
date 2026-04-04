@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: pulsevote
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pulsevote-db
+          property: connectionString
+
+databases:
+  - name: pulsevote-db
+    databaseName: pulsevote
+    user: pulsevote_user
+    plan: free

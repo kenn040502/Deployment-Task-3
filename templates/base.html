@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}PulseVote{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #1a1a26;
+      --border: #2a2a3e;
+      --accent: #7c3aff;
+      --accent2: #ff3a7c;
+      --accent3: #3affb8;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+      --radius: 12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 60% 40% at 80% 10%, rgba(124,58,255,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 10% 90%, rgba(58,255,184,0.07) 0%, transparent 60%);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,10,15,0.85);
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+    }
+
+    .nav-logo span {
+      background: linear-gradient(135deg, var(--accent3), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links { display: flex; gap: 1rem; align-items: center; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1.2rem;
+      border-radius: var(--radius);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #5b21b6);
+      color: #fff;
+      box-shadow: 0 0 20px rgba(124,58,255,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 30px rgba(124,58,255,0.5);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      color: var(--text);
+      border-color: var(--accent);
+      background: rgba(124,58,255,0.08);
+    }
+
+    .btn-danger {
+      background: rgba(255,58,124,0.1);
+      color: var(--accent2);
+      border: 1px solid rgba(255,58,124,0.3);
+    }
+    .btn-danger:hover {
+      background: rgba(255,58,124,0.2);
+      box-shadow: 0 0 15px rgba(255,58,124,0.2);
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      border-color: rgba(124,58,255,0.4);
+      box-shadow: 0 4px 30px rgba(124,58,255,0.08);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.5px;
+    }
+
+    .tag-purple {
+      background: rgba(124,58,255,0.15);
+      color: #a78bfa;
+      border: 1px solid rgba(124,58,255,0.25);
+    }
+
+    .tag-green {
+      background: rgba(58,255,184,0.1);
+      color: var(--accent3);
+      border: 1px solid rgba(58,255,184,0.2);
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="text"]:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,58,255,0.15);
+    }
+    input[type="text"]::placeholder { color: var(--muted); }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .flash {
+      background: rgba(58,255,184,0.08);
+      border: 1px solid rgba(58,255,184,0.2);
+      color: var(--accent3);
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      border-top: 1px solid var(--border);
+      margin-top: 4rem;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate { animation: fadeUp 0.5s ease forwards; }
+    .animate-delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .animate-delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .animate-delay-3 { animation-delay: 0.3s; opacity: 0; }
+  </style>
+  {% block extra_styles %}{% endblock %}
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-logo">Pulse<span>Vote</span></a>
+    <div class="nav-links">
+      <a href="/" class="btn btn-ghost">← All Polls</a>
+      <a href="/create" class="btn btn-primary">+ New Poll</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="flash">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer>PulseVote · Built with Flask + PostgreSQL · Deployed on Render</footer>
+</body>
+</html>
